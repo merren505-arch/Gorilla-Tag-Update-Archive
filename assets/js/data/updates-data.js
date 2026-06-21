@@ -1,9 +1,10 @@
-// ============================================
-//  Gorilla Tag Depot — Steam Build Data
-// ============================================
+// ============================================================================
+//  Gorilla Tag Depot — Steam Build Database
+//  Contains complete, chronological build-to-manifest and build-to-date mapping
+// ============================================================================
 
 window.steamData = [
-    // 2026
+    // --- 2026 ---
     { year: 2026, date: "Jun 13", time: "22:00", name: "No title", buildId: "23720955", id: "9039694724168908103", branch: "beta" },
     { year: 2026, date: "Jun 12", time: "17:01", name: "Gorilla Tag Creator Fest!", buildId: "23692684", id: "1027206361296962562", branch: "public" },
     { year: 2026, date: "Jun 02", time: "17:11", name: "No title", buildId: "23517313", id: "23517313", branch: "beta" },
@@ -33,11 +34,11 @@ window.steamData = [
     { year: 2026, date: "Feb 06", time: "22:08", name: "No title", buildId: "21822893", id: "21822893", branch: "beta" },
     { year: 2026, date: "Jan 30", time: "17:05", name: "No title", buildId: "21692469", id: "21692469", branch: "beta" },
     { year: 2026, date: "Jan 24", time: "17:23", name: "No title", buildId: "21631859", id: "21631859", branch: "beta" },
-    { year: 2026, date: "Jan 23", time: "18:01", name: "Monster Attack Update", buildId: "21613584", id: "21613584", branch: "public" },
+    { year: 2026, date: "Jan 23", time: "18:01", name: "Monster Attack Update", buildId: "21613584", id: "7905442131097614256", branch: "public" },
     { year: 2026, date: "Jan 10", time: "07:09", name: "No title", buildId: "21445840", id: "21445840", branch: "beta" },
     { year: 2026, date: "Jan 09", time: "18:01", name: "MAJOR Super Casual Update!", buildId: "21439660", id: "1705071900526529994", branch: "public" },
 
-    // 2025
+    // --- 2025 ---
     { year: 2025, date: "Dec 30", time: "14:04", name: "No title", buildId: "21336918", id: "21336918", branch: "beta" },
     { year: 2025, date: "Dec 27", time: "15:40", name: "No title", buildId: "21324572", id: "21324572", branch: "beta" },
     { year: 2025, date: "Dec 26", time: "18:03", name: "No title", buildId: "21315524", id: "21315524", branch: "beta" },
@@ -108,7 +109,7 @@ window.steamData = [
     { year: 2025, date: "Jan 10", time: "18:01", name: "Snowball Fight Update", buildId: "16957843", id: "1367215994416166011", branch: "public" },
     { year: 2025, date: "Jan 04", time: "22:36", name: "No title", buildId: "16907999", id: "16907999", branch: "beta" },
 
-    // 2024
+    // --- 2024 ---
     { year: 2024, date: "Dec 27", time: "22:09", name: "No title", buildId: "16862884", id: "16862884", branch: "beta" },
     { year: 2024, date: "Dec 27", time: "18:04", name: "No title", buildId: "16856831", id: "16856831", branch: "beta" },
     { year: 2024, date: "Dec 24", time: "06:20", name: "No title", buildId: "16840820", id: "16840820", branch: "beta" },
@@ -204,7 +205,7 @@ window.steamData = [
     { year: 2023, date: "Jun 16", time: "17:01", name: "Music Flashback", buildId: "11480947", id: "5909999775995420795", branch: "public" },
     { year: 2023, date: "Jun 08", time: "16:26", name: "No title", buildId: "11425313", id: "11425313", branch: "beta" },
     { year: 2023, date: "Jun 02", time: "17:01", name: "The Rainy Day Flashback is here!", buildId: "11375281", id: "3197800337588223997", branch: "public" },
-    { year: 2023, date: "May 26", time: "17:02", name: "Summer Splash Update!", buildId: "11327647", id: "11327647", branch: "public" },
+    { year: 2023, date: "May 26", time: "17:02", name: "Summer Splash Update!", buildId: "11327647", id: "6583276257667612942", branch: "public" },
     { year: 2023, date: "May 05", time: "17:02", name: "Household Flashback + More", buildId: "11159681", id: "5296372619910715608", branch: "public" },
     { year: 2023, date: "Apr 21", time: "21:19", name: "No title", buildId: "11063296", id: "11063296", branch: "beta" },
     { year: 2023, date: "Apr 21", time: "20:44", name: "No title", buildId: "11063019", id: "11063019", branch: "beta" },
@@ -219,7 +220,7 @@ window.steamData = [
     { year: 2023, date: "Jan 27", time: "18:18", name: "Winter January 2023 Patch", buildId: "10419709", id: "10419709", branch: "public" },
     { year: 2023, date: "Jan 13", time: "16:47", name: "Holiday Overstock Sale", buildId: "10301216", id: "10301216", branch: "public" },
 
-    // 2022
+    // --- 2022 ---
     { year: 2022, date: "Dec 27", time: "07:49", name: "No title", buildId: "10219239", id: "10219239", branch: "beta" },
     { year: 2022, date: "Dec 24", time: "06:14", name: "Holiday update - bug fixes", buildId: "10210289", id: "10210289", branch: "public" },
     { year: 2022, date: "Dec 22", time: "23:29", name: "Holiday update", buildId: "10203185", id: "10203185", branch: "public" },
@@ -266,7 +267,7 @@ window.steamData = [
     { year: 2022, date: "Jan 30", time: "19:52", name: "Valentine's Day!", buildId: "8114414", id: "8114414", branch: "public" },
     { year: 2022, date: "Jan 10", time: "21:09", name: "Winter Update", buildId: "7997726", id: "7997726", branch: "public" },
 
-    // 2021
+    // --- 2021 ---
     { year: 2021, date: "Dec 14", time: "23:37", name: "Hunt Mode!", buildId: "7884212", id: "7884212", branch: "public" },
     { year: 2021, date: "Dec 06", time: "20:11", name: "Holiday Update!", buildId: "7837270", id: "7837270", branch: "public" },
     { year: 2021, date: "Nov 28", time: "08:12", name: "Fix for City Escape Glitch", buildId: "7789972", id: "7789972", branch: "public" },
