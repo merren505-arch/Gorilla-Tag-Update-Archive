@@ -1,6 +1,6 @@
-// ============================================
-//  Gorilla Tag Depot Archive — Application Logic
-// ============================================
+// ============================================================================
+//  Gorilla Tag Depot Archive — Application Logic with Expandable Summaries
+// ============================================================================
 
 const state = {
     currentPlatform: 'steam', 
@@ -8,6 +8,7 @@ const state = {
     searchTerm: '',
     branchFilter: 'all', 
     isLoading: false,
+    expandedCardIndex: null, // Tracks currently expanded changelog summary
     data: {
         'steam': window.steamData || [],
         'oculus-pc': window.oculusPcData || [],
@@ -54,7 +55,6 @@ async function ensureDataFetched(platform) {
         
         const json = await response.json();
         
-        // Parse raw OculusDB structures to standardized frontend layout items
         state.data[platform] = json.versions
             .filter(v => v.downloadable)
             .map(v => {
@@ -66,13 +66,14 @@ async function ensureDataFetched(platform) {
                     desc: `Build Code: ${v.versionCode}`,
                     id: v.id, 
                     branch: v.binary_release_channels?.nodes?.some(n => n.channel_name === 'LIVE') ? 'public' : 'beta',
-                    code: v.versionCode 
+                    code: v.versionCode,
+                    summary: "Official release bundle package published to Oculus platform channels."
                 };
             })
             .sort((a, b) => b.code - a.code);
 
     } catch (err) {
-        console.warn("Failed live API fetch, falling back to cached system database.");
+        console.warn("API offline, falling back to local dataset.");
     } finally {
         state.isLoading = false;
         const availableYears = getYearsForPlatform();
@@ -88,6 +89,7 @@ window.setPlatform = async function(platform) {
     state.currentPlatform = platform;
     state.currentYear = 0; 
     state.branchFilter = 'all';
+    state.expandedCardIndex = null;
     updatePlatformUI();
     await ensureDataFetched(platform);
     render();
@@ -95,16 +97,26 @@ window.setPlatform = async function(platform) {
 
 window.setYear = function(year) {
     state.currentYear = year;
+    state.expandedCardIndex = null;
     render();
 };
 
 window.toggleBranch = function() {
     const filters = { all: 'public', public: 'beta', beta: 'all' };
     state.branchFilter = filters[state.branchFilter] || 'all';
+    state.expandedCardIndex = null;
     render();
 };
 
-window.handleCopyAction = async function(versionId, btnElement) {
+window.toggleExpandCard = function(index) {
+    state.expandedCardIndex = (state.expandedCardIndex === index) ? null : index;
+    renderList();
+};
+
+window.handleCopyAction = async function(versionId, event, btnElement) {
+    // Prevent event bubbling so copy click doesn't trigger card collapse/expand
+    event.stopPropagation();
+    
     let commandText = "";
     if (state.currentPlatform === 'steam') {
         commandText = `download_depot 1533390 1533391 ${versionId}`;
@@ -126,7 +138,7 @@ window.handleCopyAction = async function(versionId, btnElement) {
             }, 1500);
         }
     } catch (err) {
-        alert("Copy failed. Manually capture:\n\n" + commandText);
+        alert("Copy failed: \n\n" + commandText);
     }
 };
 
@@ -198,7 +210,6 @@ function renderList() {
         const matchesYear = u.year === state.currentYear;
         const s = state.searchTerm.toLowerCase();
         
-        // Comprehensive search mapping covering title name, dates, BuildID and Manifest GID targets
         const matchesSearch = !state.searchTerm || 
                               u.name.toLowerCase().includes(s) || 
                               u.date.toLowerCase().includes(s) ||
@@ -217,9 +228,10 @@ function renderList() {
         return;
     }
 
-    container.innerHTML = filteredData.map(u => {
+    container.innerHTML = filteredData.map((u, index) => {
         const isQuest = state.currentPlatform === 'oculus-quest';
         const isSteam = state.currentPlatform === 'steam';
+        const isExpanded = state.expandedCardIndex === index;
         
         let identifierLine = "";
         if (isSteam) {
@@ -228,33 +240,46 @@ function renderList() {
             identifierLine = `Oculus Version ID: <span class="text-gray-400 select-all font-semibold">${u.id}</span>`;
         }
 
+        const defaultSummary = u.summary || "Minor patch, optimization fix, or standard backend server maintenance update.";
+
         return `
-        <div class="monke-card border border-white/5 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-5 group">
-            <div class="space-y-1.5">
-                <div class="flex items-center flex-wrap gap-2.5">
-                    <h3 class="text-md font-bold text-white group-hover:text-emerald-400 transition-colors duration-300">
-                        ${u.name === "No title" ? "Public Minor Patch" : u.name}
-                    </h3>
-                    <span class="px-2 py-0.5 bg-gray-800/60 text-[10px] font-bold rounded-md text-gray-400 border border-white/5 uppercase tracking-wide">
-                        ${u.date}
-                    </span>
-                    ${u.branch === 'beta' ? `<span class="text-[10px] bg-amber-500/10 text-amber-400 px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Patch / Beta</span>` : ''}
+        <div onclick="toggleExpandCard(${index})" class="monke-card border border-white/5 rounded-2xl p-5 flex flex-col gap-4 cursor-pointer group select-none">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                <div class="space-y-1.5 flex-grow">
+                    <div class="flex items-center flex-wrap gap-2.5">
+                        <h3 class="text-md font-bold text-white group-hover:text-emerald-400 transition-colors duration-300">
+                            ${u.name === "No title" ? "Public Minor Patch" : u.name}
+                        </h3>
+                        <span class="px-2 py-0.5 bg-gray-800/60 text-[10px] font-bold rounded-md text-gray-400 border border-white/5 uppercase tracking-wide">
+                            ${u.date}
+                        </span>
+                        ${u.branch === 'beta' ? `<span class="text-[10px] bg-amber-500/10 text-amber-400 px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Patch / Beta</span>` : ''}
+                    </div>
+                    <p class="text-gray-400 text-xs">${u.time ? `Released at ${u.time}` : (u.desc || 'No descriptor found')}</p>
+                    <p class="text-gray-500 text-[10px] font-mono tracking-wide">${identifierLine}</p>
                 </div>
-                <p class="text-gray-400 text-xs">${u.time ? `Released at ${u.time}` : (u.desc || 'No descriptor found')}</p>
-                <p class="text-gray-500 text-[10px] font-mono tracking-wide">${identifierLine}</p>
+                <div>
+                    ${isQuest ? `
+                        <button onclick="event.stopPropagation(); window.open('${QUEST_GUIDE_URL}', '_blank')" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white px-5 py-3 rounded-xl text-xs font-bold border border-emerald-500/20 transition-all active:scale-95">
+                            <span>Install Guide</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                        </button>
+                    ` : `
+                        <button onclick="handleCopyAction('${u.id}', event, this)" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-800/40 hover:bg-gray-800/80 px-5 py-3 rounded-xl text-xs font-bold border border-white/5 group-hover:border-emerald-500/30 transition-all active:scale-95">
+                            <span class="copy-label">Copy Command</span>
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .415.162.787.428 1.062.263.27.629.438 1.034.438.405 0 .771-.168 1.034-.438.266-.275.428-.647.428-1.062 0-.231-.035-.454-.1-.664m-5.801 0A4.992 4.992 0 0110.125 3h1.5a4.992 4.992 0 014.676 3.08m-11.176 0c-1.132.094-1.976 1.057-1.976 2.192V16.5A2.25 2.25 0 005.25 18.75h3m7.5-13.5v12" /></svg>
+                        </button>
+                    `}
+                </div>
             </div>
-            <div>
-                ${isQuest ? `
-                    <button onclick="window.open('${QUEST_GUIDE_URL}', '_blank')" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white px-5 py-3 rounded-xl text-xs font-bold border border-emerald-500/20 transition-all active:scale-95">
-                        <span>Install Guide</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                    </button>
-                ` : `
-                    <button onclick="handleCopyAction('${u.id}', this)" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-800/40 hover:bg-gray-800/80 px-5 py-3 rounded-xl text-xs font-bold border border-white/5 group-hover:border-emerald-500/30 transition-all active:scale-95">
-                        <span class="copy-label">Copy Command</span>
-                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .415.162.787.428 1.062.263.27.629.438 1.034.438.405 0 .771-.168 1.034-.438.266-.275.428-.647.428-1.062 0-.231-.035-.454-.1-.664m-5.801 0A4.992 4.992 0 0110.125 3h1.5a4.992 4.992 0 014.676 3.08m-11.176 0c-1.132.094-1.976 1.057-1.976 2.192V16.5A2.25 2.25 0 005.25 18.75h3m7.5-13.5v12" /></svg>
-                    </button>
-                `}
+            
+            <!-- Expandable slide down changelog details summary block -->
+            <div class="${isExpanded ? 'block' : 'hidden'} border-t border-white/5 pt-4 transition-all duration-300">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 11.513 1.293l-.041.02a.75.75 0 11-.513-1.293zM12 18a6.75 6.75 0 110-13.5 6.75 6.75 0 010 13.5z" /></svg>
+                    Changelog Summary
+                </h4>
+                <p class="text-gray-300 text-xs leading-relaxed max-w-4xl">${defaultSummary}</p>
             </div>
         </div>`;
     }).join('');
@@ -284,6 +309,7 @@ function showToast(msg) {
 // --- Event Listeners ---
 document.getElementById('search-input').addEventListener('input', (e) => {
     state.searchTerm = e.target.value;
+    state.expandedCardIndex = null;
     render();
 });
 
